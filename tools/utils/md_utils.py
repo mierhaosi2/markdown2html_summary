@@ -66,8 +66,9 @@ class ReportRenderer:
         participant_count  = data.get("participant_count")
         customer_msg_count = data.get("customer_msg_count")
         ai_response_count  = data.get("ai_response_count")
-        msg_count_change   = str(data.get("msg_count_change",  "") or "")
-        participant_change = str(data.get("participant_change", "") or "")
+        msg_count_change    = str(data.get("msg_count_change",    "") or "")
+        participant_change  = str(data.get("participant_change",  "") or "")
+        ai_response_change  = str(data.get("ai_response_change",  "") or "")
         customer_change    = str(data.get("customer_change",   "") or "")
         summary            = str(data.get("summary", "") or "")
         key_items: list[dict]  = data.get("key_items",  []) or []
@@ -97,7 +98,7 @@ class ReportRenderer:
             _metric("消息总数",   msg_count,          "条", msg_count_change)
             + _metric("参与人数", participant_count,  "人", participant_change)
             + _metric("客户消息", customer_msg_count, "条", customer_change)
-            + _metric("AI 响应次数", ai_response_count, "次", "")
+            + _metric("AI 响应次数", ai_response_count, "次", ai_response_change)
         )
 
         # ── 总结 ──
@@ -173,7 +174,7 @@ class ReportRenderer:
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light">
-  <title>AI 客户群周度纪要 · {_g}</title>
+  <title>AI 客户群周度纪要</title>
   {global_css}
 </head>
 <body>
@@ -181,7 +182,7 @@ class ReportRenderer:
 
   <header class="hero">
     <div class="eyebrow">AI 智能纪要</div>
-    <h1>{_g} · 周度纪要</h1>
+    <h1>周度纪要</h1>
     <div class="meta">
       <span class="meta-item">{_ICON_CALENDAR} 统计周期：{period}</span>
       <span class="meta-item">{_ICON_GROUP} 服务群：{_g}</span>
@@ -214,14 +215,6 @@ class ReportRenderer:
       <span class="section-note">共 {len(key_items)} 项</span>
     </div>
     <div class="topic-list">{topics_html}</div>
-  </section>
-
-  <section class="section" aria-labelledby="hot-title">
-    <div class="section-head">
-      <h2 class="section-title" id="hot-title"><span class="section-no">4</span>高频问题沉淀</h2>
-      <span class="section-note">共 {len(hot_issues)} 类</span>
-    </div>
-    <div class="hot-list">{hot_html}</div>
   </section>
 
   <section class="section" aria-labelledby="todo-title">
