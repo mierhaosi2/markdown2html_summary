@@ -66,14 +66,53 @@ class ReportRenderer:
         participant_count  = data.get("participant_count")
         customer_msg_count = data.get("customer_msg_count")
         ai_response_count  = data.get("ai_response_count")
-        msg_count_change    = str(data.get("msg_count_change",    "") or "")
-        participant_change  = str(data.get("participant_change",  "") or "")
-        ai_response_change  = str(data.get("ai_response_change",  "") or "")
-        customer_change    = str(data.get("customer_change",   "") or "")
         summary            = str(data.get("summary", "") or "")
         key_items: list[dict]  = data.get("key_items",  []) or []
         hot_issues: list[dict] = data.get("hot_issues", []) or []
         todos: list[dict]      = data.get("todos",      []) or []
+
+        # ── 环比计算（代码算，不信任 LLM 输出）──────────────────────────
+        def _calc_change(current, last_key: str) -> str:
+            """计算百分比变化，返回格式如 ↑15% 较上周 / ↓5% 较上周 / 持平 较上周。"""
+            try:
+                last = data.get(last_key)
+                if last is None or str(last).strip() == "":
+                    return ""
+                cur_v  = int(current)
+                last_v = int(last)
+                if last_v == 0:
+                    return "" if cur_v == 0 else "↑ 新增"
+                diff = cur_v - last_v
+                pct  = round(abs(diff) / last_v * 100)
+                if diff > 0:
+                    return f"↑{pct}% 较上周"
+                if diff < 0:
+                    return f"↓{pct}% 较上周"
+                return "持平 较上周"
+            except (TypeError, ValueError):
+                return ""
+
+        def _calc_person_change(current, last_key: str) -> str:
+            """人数变化，格式如 ↑2人 较上周。"""
+            try:
+                last = data.get(last_key)
+                if last is None or str(last).strip() == "":
+                    return ""
+                cur_v  = int(current)
+                last_v = int(last)
+                diff   = cur_v - last_v
+                if diff > 0:
+                    return f"↑{diff}人 较上周"
+                if diff < 0:
+                    return f"↓{abs(diff)}人 较上周"
+                return "持平 较上周"
+            except (TypeError, ValueError):
+                return ""
+
+        msg_count_change   = _calc_change(msg_count,          "last_week_msg_count")
+        participant_change = _calc_person_change(participant_count, "last_week_participant_count")
+        customer_change    = _calc_change(customer_msg_count,  "last_week_customer_msg_count")
+        ai_response_change = _calc_change(ai_response_count,   "last_week_ai_response_count")
 
         # ── 头部 meta ──
         period = f"{_sd} — {_ed}" if (_sd and _ed) else (_sd or _ed or "—")
